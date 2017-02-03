@@ -643,8 +643,8 @@ public class PatchOperationUtil {
                                     ((ComplexAttribute) attributeHoldingSCIMObject.
                                             getAttribute(attributeName)).getSubAttributesList();
 
-                            for (String subAttributeName : subAttributeList.keySet()) {
-                                Attribute subAttribute = oldAttribute.getSubAttribute(subAttributeName);
+                            for (Map.Entry<String, Attribute> subAttributeEntry : subAttributeList.entrySet()) {
+                                Attribute subAttribute = oldAttribute.getSubAttribute(subAttributeEntry.getKey());
 
                                 if (subAttribute != null) {
                                     if (subAttribute.getType().equals(SCIMDefinitions.DataType.COMPLEX)) {
@@ -653,25 +653,29 @@ public class PatchOperationUtil {
                                             MultiValuedAttribute attributeSubValue = (MultiValuedAttribute)
                                                     ((ComplexAttribute) attributeHoldingSCIMObject.
                                                             getAttribute(attributeName)).
-                                                            getSubAttribute(subAttributeName);
+                                                            getSubAttribute(subAttributeEntry.getKey());
 
                                             for (Attribute attribute : attributeSubValue.getAttributeValues()) {
                                                 ((MultiValuedAttribute) subAttribute).setAttributeValue(attribute);
                                             }
                                         } else {
                                             //extension schema is the only one who reaches here.
-                                            Map<String, Attribute> subSubAttributeList = ((ComplexAttribute)
+                                            Map<String, Attribute> subSubAttributeMap = ((ComplexAttribute)
                                                     (attributeHoldingSCIMObject.getAttribute(attributeName).
-                                                            getSubAttribute(subAttributeName))).getSubAttributesList();
+                                                            getSubAttribute(subAttributeEntry.getKey())))
+                                                    .getSubAttributesList();
 
-                                            for (String subSubAttributeName : subSubAttributeList.keySet()) {
+                                            for (Map.Entry<String, Attribute> subSubAttributeEntry :
+                                                    subSubAttributeMap.entrySet()) {
+
                                                 Attribute subSubAttribute = oldAttribute.getSubAttribute
-                                                        (subAttributeName).getSubAttribute(subSubAttributeName);
+                                                        (subAttributeEntry.getKey()).getSubAttribute
+                                                        (subSubAttributeEntry.getKey());
 
                                                 if (subSubAttribute != null) {
                                                     if (subSubAttribute.getMultiValued()) {
                                                         List<Object> items = ((MultiValuedAttribute)
-                                                                (subSubAttributeList.get(subSubAttributeName))).
+                                                                (subSubAttributeEntry.getValue())).
                                                                 getAttributePrimitiveValues();
                                                         for (Object item : items) {
                                                             ((MultiValuedAttribute) subSubAttribute).
@@ -679,13 +683,13 @@ public class PatchOperationUtil {
                                                         }
                                                     } else {
                                                         ((SimpleAttribute) subSubAttribute).setValue(
-                                                                ((SimpleAttribute) subSubAttributeList.get
-                                                                        (subSubAttributeName)).getValue());
+                                                                ((SimpleAttribute) subSubAttributeEntry.getValue())
+                                                                        .getValue());
                                                     }
                                                 } else {
-                                                    if (subSubAttributeList.get(subSubAttributeName) != null) {
+                                                    if (subSubAttributeEntry.getValue() != null) {
                                                         ((ComplexAttribute) (subAttribute)).setSubAttribute(
-                                                                subSubAttributeList.get(subSubAttributeName));
+                                                                subSubAttributeEntry.getValue());
                                                     } else {
                                                         throw new BadRequestException("Not a valid attribute.",
                                                                 ResponseCodeConstants.INVALID_SYNTAX);
@@ -696,20 +700,18 @@ public class PatchOperationUtil {
                                     } else {
                                         if (subAttribute.getMultiValued()) {
                                             List<Object> items = ((MultiValuedAttribute)
-                                                    (subAttributeList.get(subAttributeName))).
-                                                    getAttributePrimitiveValues();
+                                                    (subAttributeEntry.getValue())).getAttributePrimitiveValues();
                                             for (Object item : items) {
                                                 ((MultiValuedAttribute) subAttribute).setAttributePrimitiveValue(item);
                                             }
                                         } else {
                                             ((SimpleAttribute) subAttribute).setValue(((SimpleAttribute)
-                                                    subAttributeList.get(subAttributeName)).getValue());
+                                                    subAttributeEntry.getValue()).getValue());
                                         }
                                     }
                                 } else {
-                                    if (subAttributeList.get(subAttributeName) != null) {
-                                        ((ComplexAttribute) oldAttribute).setSubAttribute
-                                                (subAttributeList.get(subAttributeName));
+                                    if (subAttributeEntry.getValue() != null) {
+                                        ((ComplexAttribute) oldAttribute).setSubAttribute(subAttributeEntry.getValue());
                                     } else {
                                         throw new BadRequestException("Not a valid attribute.",
                                                 ResponseCodeConstants.INVALID_SYNTAX);
@@ -1839,7 +1841,9 @@ public class PatchOperationUtil {
                 }
             }
 
-        } else {
+        }
+        /*
+        else {
             AttributeSchema attributeSchema = SchemaUtil.getAttributeSchema(attributeParts[0], schema);
 
             if (attributeSchema != null) {
@@ -1900,6 +1904,7 @@ public class PatchOperationUtil {
                         ResponseCodeConstants.INVALID_PATH);
             }
         }
+        */
         return oldResource;
 
 
@@ -1949,6 +1954,7 @@ public class PatchOperationUtil {
 
                                 if (((SimpleAttribute) subAttribute).getValue().equals(expressionNode.getValue())) {
                                     Attribute replacingAttribute = subAttributes.get(attributeParts[1]);
+                                    /*
                                     if (replacingAttribute == null) {
                                         //add the attribute
                                         AttributeSchema replacingAttributeSchema =
@@ -1972,6 +1978,7 @@ public class PatchOperationUtil {
                                             break;
                                         }
                                     }
+                                */
                                     if (replacingAttribute.getMutability().
                                             equals(SCIMDefinitions.Mutability.READ_ONLY) ||
                                             replacingAttribute.getMutability().
@@ -2409,8 +2416,8 @@ public class PatchOperationUtil {
                                     ((ComplexAttribute) attributeHoldingSCIMObject.
                                             getAttribute(attributeName)).getSubAttributesList();
 
-                            for (String subAttributeName : subAttributeList.keySet()) {
-                                Attribute subAttribute = oldAttribute.getSubAttribute(subAttributeName);
+                            for (Map.Entry<String, Attribute> subAttributeEntry : subAttributeList.entrySet()) {
+                                Attribute subAttribute = oldAttribute.getSubAttribute(subAttributeEntry.getKey());
 
                                 if (subAttribute != null) {
                                     if (subAttribute.getType().equals(SCIMDefinitions.DataType.COMPLEX)) {
@@ -2419,7 +2426,7 @@ public class PatchOperationUtil {
                                             MultiValuedAttribute attributeSubValue = (MultiValuedAttribute)
                                                     ((ComplexAttribute) attributeHoldingSCIMObject.
                                                             getAttribute(attributeName)).
-                                                            getSubAttribute(subAttributeName);
+                                                            getSubAttribute(subAttributeEntry.getKey());
 
                                             if (subAttribute.getMutability().equals
                                                     (SCIMDefinitions.Mutability.IMMUTABLE) ||
@@ -2441,11 +2448,14 @@ public class PatchOperationUtil {
                                             //extension schema is the only one who reaches here.
                                             Map<String, Attribute> subSubAttributeList = ((ComplexAttribute)
                                                     (attributeHoldingSCIMObject.getAttribute(attributeName).
-                                                            getSubAttribute(subAttributeName))).getSubAttributesList();
+                                                            getSubAttribute(subAttributeEntry.getKey())))
+                                                    .getSubAttributesList();
 
-                                            for (String subSubAttributeName : subSubAttributeList.keySet()) {
+                                            for (Map.Entry<String, Attribute> subSubAttributeEntry : subSubAttributeList
+                                                    .entrySet()) {
                                                 Attribute subSubAttribute = oldAttribute.getSubAttribute
-                                                        (subAttributeName).getSubAttribute(subSubAttributeName);
+                                                        (subAttributeEntry.getKey()).getSubAttribute
+                                                        (subSubAttributeEntry.getKey());
 
                                                 if (subSubAttribute != null) {
                                                     if (subSubAttribute.getMultiValued()) {
@@ -2462,21 +2472,21 @@ public class PatchOperationUtil {
                                                         } else {
                                                             //delete the old attribute
                                                             ((ComplexAttribute) (oldAttribute.getSubAttribute
-                                                                    (subAttributeName))).removeSubAttribute
+                                                                    (subAttributeEntry.getKey()))).removeSubAttribute
                                                                     (subSubAttribute.getName());
                                                             //replace with new attribute
                                                             ((ComplexAttribute) (oldAttribute.getSubAttribute
-                                                                    (subAttributeName))).setSubAttribute
+                                                                    (subAttributeEntry.getKey()))).setSubAttribute
                                                                     (subSubAttribute);
                                                         }
                                                     } else {
                                                         ((SimpleAttribute) subSubAttribute).setValue(
-                                                                ((SimpleAttribute) subSubAttributeList.get
-                                                                        (subSubAttributeName)).getValue());
+                                                                ((SimpleAttribute) subSubAttributeEntry.getValue())
+                                                                        .getValue());
                                                     }
                                                 } else {
-                                                    ((ComplexAttribute) (subAttribute)).setSubAttribute(
-                                                            subSubAttributeList.get(subSubAttributeName));
+                                                    ((ComplexAttribute) (subAttribute)).setSubAttribute
+                                                            (subSubAttributeEntry.getValue());
                                                 }
                                             }
                                         }
@@ -2500,8 +2510,7 @@ public class PatchOperationUtil {
                                     }
                                 } else {
                                     //add the attribute
-                                    ((ComplexAttribute) oldAttribute).setSubAttribute
-                                            (subAttributeList.get(subAttributeName));
+                                    ((ComplexAttribute) oldAttribute).setSubAttribute(subAttributeEntry.getValue());
                                 }
                             }
                         } else {
