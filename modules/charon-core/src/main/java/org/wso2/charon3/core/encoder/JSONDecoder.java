@@ -646,13 +646,13 @@ public class JSONDecoder {
                 JSONObject member = (JSONObject) membersAttributeOperations.get(i);
                 //Request path - /Users or /Groups
                 String requestType = member.optString(SCIMConstants.OperationalConstants.PATH);
-                if (requestType.equals(null)) {
+                if (requestType == null) {
                     throw new BadRequestException("Missing required attribute : path",
                             ResponseCodeConstants.INVALID_SYNTAX);
                 }
                 //Request method  - POST,PUT..etc
                 String requestMethod = member.optString(SCIMConstants.OperationalConstants.METHOD);
-                if (requestMethod.equals(null)) {
+                if (requestMethod == null) {
                     throw new BadRequestException("Missing required attribute : method",
                             ResponseCodeConstants.INVALID_SYNTAX);
                 }
@@ -662,7 +662,7 @@ public class JSONDecoder {
                 if (requestMethod.equals(SCIMConstants.OperationalConstants.POST)) {
 
                     if (!member.optString(SCIMConstants.OperationalConstants.BULK_ID).equals("") &&
-                            !member.optString(SCIMConstants.OperationalConstants.BULK_ID).equals(null)) {
+                            !(member.optString(SCIMConstants.OperationalConstants.BULK_ID) == null)) {
 
                         setRequestData(requestType, requestMethod, requestVersion,
                                 member, usersEndpointOperationList, groupsEndpointOperationList);
