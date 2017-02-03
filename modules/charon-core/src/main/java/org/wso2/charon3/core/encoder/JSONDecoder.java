@@ -696,7 +696,7 @@ public class JSONDecoder {
     private void setRequestData(String requestType, String requestMethod,
                                 String requestVersion, JSONObject member,
                                 List<BulkRequestContent> usersEndpointOperationList,
-                                List<BulkRequestContent> groupsEndpointOperationList){
+                                List<BulkRequestContent> groupsEndpointOperationList) {
         //create user request list
         if (requestType.contains(SCIMConstants.USER_ENDPOINT)) {
             BulkRequestContent newRequestData =
@@ -730,5 +730,3 @@ public class JSONDecoder {
     }
 
 }
-
-

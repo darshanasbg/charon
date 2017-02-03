@@ -542,7 +542,7 @@ public class GroupResourceManager extends AbstractResourceManager {
             //get the group from the user core
             Group oldGroup = userManager.getGroup(existingId, ResourceManagerUtil.getAllAttributeURIs(schema));
             if (oldGroup == null) {
-                throw new NotFoundException("No group with the id : " + existingId +" in the user store.");
+                throw new NotFoundException("No group with the id : " + existingId + " in the user store.");
             }
             //make a copy of the original group
             Group copyOfOldGroup = (Group) CopyUtil.deepCopy(oldGroup);
