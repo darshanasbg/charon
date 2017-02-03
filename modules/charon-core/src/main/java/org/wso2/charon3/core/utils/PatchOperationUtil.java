@@ -1709,6 +1709,7 @@ public class PatchOperationUtil {
 
         Attribute attribute = oldResource.getAttribute(attributeParts[0]);
         boolean isValueFound = false;
+
         if (attribute != null) {
 
             Attribute subAttribute = attribute.getSubAttribute(attributeParts[1]);

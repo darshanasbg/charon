@@ -297,12 +297,16 @@ public class MeResourceManager extends AbstractResourceManager {
         try {
             //obtain the json decoder.
             JSONDecoder decoder = getDecoder();
-            //obtain the json encoder.
-            JSONEncoder encoder = getEncoder();
             //decode the SCIM User object, encoded in the submitted payload.
             List<PatchOperation> opList = decoder.decodeRequest(scimObjectString);
 
             SCIMResourceTypeSchema schema = SCIMResourceSchemaManager.getInstance().getUserResourceSchema();
+
+            if (userManager == null) {
+                String error = "Provided user manager handler is null.";
+                throw new InternalErrorException(error);
+            }
+
             //get the user from the user core
             User oldUser = userManager.getMe(existingId, ResourceManagerUtil.getAllAttributeURIs(schema));
             if (oldUser == null) {
@@ -360,21 +364,11 @@ public class MeResourceManager extends AbstractResourceManager {
                     ResourceManagerUtil.getOnlyRequiredAttributesURIs((SCIMResourceTypeSchema)
                             CopyUtil.deepCopy(schema), attributes, excludeAttributes);
 
-            if (userManager != null) {
-                if (oldUser != null) {
-                    User validatedUser = (User) ServerSideValidator.validateUpdatedSCIMObject
-                            (originalUser, newUser, schema);
-                    newUser = userManager.updateMe(validatedUser, requiredAttributes);
 
-                } else {
-                    String error = "No user exists with the given id: " + existingId;
-                    throw new NotFoundException(error);
-                }
+            User validatedUser = (User) ServerSideValidator.validateUpdatedSCIMObject
+                    (originalUser, newUser, schema);
+            newUser = userManager.updateMe(validatedUser, requiredAttributes);
 
-            } else {
-                String error = "Provided user manager handler is null.";
-                throw new InternalErrorException(error);
-            }
             //encode the newly created SCIM user object and add id attribute to Location header.
             String encodedUser;
             Map<String, String> httpHeaders = new HashMap<String, String>();
@@ -406,9 +400,6 @@ public class MeResourceManager extends AbstractResourceManager {
             return encodeSCIMException(e);
         } catch (InternalErrorException e) {
             return encodeSCIMException(e);
-        } catch (Exception e) {
-            CharonException e1 = new CharonException("Error in performing the patch operation on user resource.", e);
-            return encodeSCIMException(e1);
         }
     }
 

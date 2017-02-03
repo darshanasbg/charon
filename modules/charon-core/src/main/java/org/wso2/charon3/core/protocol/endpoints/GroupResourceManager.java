@@ -533,12 +533,16 @@ public class GroupResourceManager extends AbstractResourceManager {
         try {
             //obtain the json decoder.
             JSONDecoder decoder = getDecoder();
-            //obtain the json encoder.
-            JSONEncoder encoder = getEncoder();
             //decode the SCIM User object, encoded in the submitted payload.
             List<PatchOperation> opList = decoder.decodeRequest(scimObjectString);
 
             SCIMResourceTypeSchema schema = SCIMResourceSchemaManager.getInstance().getGroupResourceSchema();
+
+            if (userManager == null) {
+                String error = "Provided user manager handler is null.";
+                throw new InternalErrorException(error);
+            }
+
             //get the group from the user core
             Group oldGroup = userManager.getGroup(existingId, ResourceManagerUtil.getAllAttributeURIs(schema));
             if (oldGroup == null) {
@@ -598,21 +602,10 @@ public class GroupResourceManager extends AbstractResourceManager {
                     ResourceManagerUtil.getOnlyRequiredAttributesURIs((SCIMResourceTypeSchema)
                             CopyUtil.deepCopy(schema), attributes, excludeAttributes);
 
-            if (userManager != null) {
-                if (oldGroup != null) {
-                    Group validatedGroup = (Group) ServerSideValidator.validateUpdatedSCIMObject
-                            (originalGroup, newGroup, schema);
-                    newGroup = userManager.updateGroup(originalGroup, validatedGroup, requiredAttributes);
+            Group validatedGroup = (Group) ServerSideValidator.validateUpdatedSCIMObject
+                    (originalGroup, newGroup, schema);
+            newGroup = userManager.updateGroup(originalGroup, validatedGroup, requiredAttributes);
 
-                } else {
-                    String error = "No group exists with the given id: " + existingId;
-                    throw new NotFoundException(error);
-                }
-
-            } else {
-                String error = "Provided user manager handler is null.";
-                throw new InternalErrorException(error);
-            }
             //encode the newly created SCIM group object and add id attribute to Location header.
             String encodedGroup;
             Map<String, String> httpHeaders = new HashMap<String, String>();
@@ -644,9 +637,6 @@ public class GroupResourceManager extends AbstractResourceManager {
             return AbstractResourceManager.encodeSCIMException(e);
         } catch (InternalErrorException e) {
             return AbstractResourceManager.encodeSCIMException(e);
-        } catch (Exception e) {
-            CharonException e1 = new CharonException("Error in performing the patch operation on group resource.", e);
-            return AbstractResourceManager.encodeSCIMException(e1);
         }
     }
 
